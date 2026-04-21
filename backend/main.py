@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from search import search_company
 from scraper import fetch_website_content
+from cleaner import clean_text
 
 app = FastAPI()
 
@@ -26,8 +27,10 @@ def scrape_website(company: str):
     if status != 200:
         raise HTTPException(status_code=status, detail="Failed to fetch webpage")
 
+    cleaned_content = clean_text(content)
+
     return {
         "company": company,
         "source_url": url,
-        "content_preview": content[:5]
+        "cleaned_content_preview": cleaned_content[:500]
     }

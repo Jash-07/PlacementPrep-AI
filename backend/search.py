@@ -8,7 +8,7 @@ client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 
 def search_company(company: str):
-   query = f"{company} company overview what does {company} do"
+    query = f"{company} company overview"
 
     response = client.search(query=query, max_results=5)
 
@@ -17,7 +17,7 @@ def search_company(company: str):
     if not results:
         return None
 
-    # Prefer Wikipedia or Britannica if available
+    # Prefer Britannica if available
     for result in results:
         url = result["url"]
         if "britannica" in url:
