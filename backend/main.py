@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
-import requests
-from bs4 import BeautifulSoup
+from scraper import fetch_website_content
 
 app = FastAPI()
+
 
 @app.get("/")
 def read_root():
@@ -11,33 +11,19 @@ def read_root():
 
 @app.get("/scrape")
 def scrape_website(company: str):
+
     if not company:
         raise HTTPException(status_code=400, detail="Company name is required")
 
-    try:
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
+    url = f"https://en.wikipedia.org/wiki/{company}"
 
-        response = requests.get(url, headers=headers, timeout=10)
+    content, status = fetch_website_content(url)
 
-        if response.status_code != 200:
-            raise HTTPException(status_code=404, detail="Company page not found")
+    if status != 200:
+        raise HTTPException(status_code=status, detail="Failed to fetch webpage")
 
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        paragraphs = soup.find_all("p")
-        text_data = [
-            p.get_text().strip()
-            for p in paragraphs
-            if p.get_text().strip() != ""
-        ]
-
-        return {
-            "company": company,
-            "url": url,
-            "content_preview": text_data[:5]
-        }
-
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {
+        "company": company,
+        "url": url,
+        "content_preview": content[:5]
+    }
