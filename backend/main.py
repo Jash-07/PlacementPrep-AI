@@ -10,8 +10,9 @@ def read_root():
 
 
 @app.get("/scrape")
-def scrape_website():
-    url = "https://en.wikipedia.org/wiki/Python_(programming_language)"
+def scrape_website(company: str):
+    if not company:
+        raise HTTPException(status_code=400, detail="Company name is required")
 
     try:
         headers = {
@@ -20,13 +21,11 @@ def scrape_website():
 
         response = requests.get(url, headers=headers, timeout=10)
 
-        # Check if request was successful
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Failed to fetch the webpage")
+            raise HTTPException(status_code=404, detail="Company page not found")
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Extract paragraph text
         paragraphs = soup.find_all("p")
         text_data = [
             p.get_text().strip()
@@ -35,8 +34,8 @@ def scrape_website():
         ]
 
         return {
+            "company": company,
             "url": url,
-            "total_paragraphs": len(text_data),
             "content_preview": text_data[:5]
         }
 
