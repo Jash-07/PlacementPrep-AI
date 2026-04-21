@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from search import search_company
 from scraper import fetch_website_content
 
 app = FastAPI()
@@ -15,7 +16,10 @@ def scrape_website(company: str):
     if not company:
         raise HTTPException(status_code=400, detail="Company name is required")
 
-    url = f"https://en.wikipedia.org/wiki/{company}"
+    url = search_company(company)
+
+    if not url:
+        raise HTTPException(status_code=404, detail="No relevant website found")
 
     content, status = fetch_website_content(url)
 
@@ -24,6 +28,6 @@ def scrape_website(company: str):
 
     return {
         "company": company,
-        "url": url,
+        "source_url": url,
         "content_preview": content[:5]
     }
